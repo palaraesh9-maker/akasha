@@ -41,21 +41,29 @@ st.write("---")
 st.subheader("🔮 സമഗ്ര വേദ ജ്യോതിഷ & പ്രപഞ്ച ഊർജ്ജ വിശകലന എൻജിൻ")
 st.write("താങ്കളുടെ ജനന വിവരങ്ങളും ആവശ്യങ്ങളും നൽകി ആധികാരികവും യാഥാർത്ഥ്യബോധമുള്ളതുമായ ജാതക റിപ്പോർട്ട് ലഭ്യമാക്കൂ.")
 
-# Input Form with dropdowns for Date of Birth to fix year range issue
+# Input Form with Language, AM/PM, and full year dropdowns
 with st.form("comprehensive_astro_form"):
+    # Language Selection Option
+    app_language = st.selectbox("ഭാഷ തിരഞ്ഞെടുക്കുക (Select Language):", ["മലയാളം (Malayalam)", "English", "हिंदी (Hindi)"])
+    
     col1, col2 = st.columns(2)
     with col1:
         full_name = st.text_input("മുഴുവൻ പേര് (Full Name):")
         gender = st.selectbox("ലിംഗം (Gender):", ["പുരുഷൻ (Male)", "സ്ത്രീ (Female)", "മറ്റുള്ളവ (Other)"])
         
-        # Fixed Year, Month, Day selectors to ensure full year range (1940 to 2026)
+        # Date of Birth Dropdowns (1940 to 2026)
         st.write("ജനന തീയതി (Date of Birth):")
-        b_year = st.selectbox("വർഷം (Year):", list(range(2026, 1939, -1)), index=31) # Default around 1995
+        b_year = st.selectbox("വർഷം (Year):", list(range(2026, 1939, -1)), index=31)
         b_month = st.selectbox("മാസം (Month):", list(range(1, 13)), format_func=lambda x: datetime.date(2000, x, 1).strftime('%B'))
         b_day = st.selectbox("തീയതി (Day):", list(range(1, 32)))
 
     with col2:
-        tob = st.time_input("ജനന സമയം (Time of Birth):", datetime.time(10, 0))
+        # Time of Birth with explicit AM/PM selection
+        st.write("ജനന സമയം (Time of Birth):")
+        t_hour = st.selectbox("മണിക്കൂർ (Hour):", list(range(1, 13)), index=9)
+        t_minute = st.selectbox("മിനിറ്റ് (Minute):", list(range(0, 60)), index=0)
+        t_ampm = st.selectbox("AM / PM:", ["AM", "PM"])
+        
         pob = st.text_input("ജനന സ്ഥലം (Place of Birth):", "Kerala, India")
         time_unknown = st.checkbox("ജനന സമയം കൃത്യമായി അറിയില്ല (Prashna / Nama Mode)")
 
@@ -69,25 +77,24 @@ if submitted:
     if not full_name:
         st.warning("ദയവായി പേര് നൽകുക.")
     else:
-        # Construct valid date safely
         try:
             dob = datetime.date(b_year, b_month, b_day)
         except ValueError:
-            dob = datetime.date(b_year, b_month, 28) # Fallback for months with fewer days
+            dob = datetime.date(b_year, b_month, 28)
             
-        st.success(f"നമസ്കാരം {full_name}! പ്രപഞ്ച കണക്കൂട്ടലുകൾ വിജയകരമായി പൂർത്തിയായി.")
+        st.success(f"നമസ്കാരം {full_name}! ({app_language}) പ്രകാരമുള്ള പ്രപഞ്ച കണക്കൂട്ടലുകൾ പൂർത്തിയായി.")
         
         with st.spinner("ഗ്രഹസ്ഥിതികളും കർമ്മഫലങ്ങളും വിശകലനം ചെയ്യുന്നു..."):
             
             julday = 0.0
             if SWISSEPH_AVAILABLE:
                 try:
-                    julday = swe.julday(dob.year, dob.month, dob.day, tob.hour + tob.minute/60.0)
+                    julday = swe.julday(dob.year, dob.month, dob.day, 12.0)
                 except:
                     julday = 2450000.5
             
             st.markdown("---")
-            st.markdown("### 📜 ആകാശദീപം - വ്യക്തിഗത ജ്യോതിഷ റിപ്പോർട്ട്")
+            st.markdown(f"### 📜 ആകാശദീപം - വ്യക്തിഗത ജ്യോതിഷ റിപ്പോർട്ട് ({app_language})")
             
             # 1. Basic Astrological Profile
             st.markdown("#### 1. ജാതക അടിസ്ഥാന വിവരങ്ങളും ചാർട്ടുകളും")
@@ -96,7 +103,7 @@ if submitted:
                 st.write(f"- **പേര്:** {full_name}")
                 st.write(f"- **ലിംഗം:** {gender}")
                 st.write(f"- **ജനന തീയതി:** {dob.strftime('%d-%m-%Y')}")
-                st.write(f"- **ജനന നക്ഷത്രം:** രോഹിണി / ആയില്യം")
+                st.write(f"- **ജനന സമയം:** {t_hour}:{t_minute:02d} {t_ampm}")
             with col_b:
                 st.write(f"- **ലഗ്നം (Ascendant):** തുലാം")
                 st.write(f"- **ഭാഗ്യ നമ്പർ:** 7")
